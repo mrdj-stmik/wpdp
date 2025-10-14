@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Dropdown WPDP</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin-bottom: 30px; padding: 15px; border: 1px solid #ccc; }
+        .result { margin-top: 10px; padding: 10px; background: #f9f9f9; }
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+    <h1>Debug Dropdown WPDP</h1>
+    
+    <div class="test-section">
+        <h3>Test 1: AJAX Endpoint Komponen</h3>
+        <button onclick="testKomponen()">Test Komponen dengan RO ID = 1</button>
+        <div id="result1" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 2: AJAX Endpoint Akun</h3>
+        <button onclick="testAkun()">Test Akun dengan Komponen ID = 68</button>
+        <div id="result2" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 3: AJAX Endpoint Detil</h3>
+        <button onclick="testDetil()">Test Detil dengan Akun ID = 1</button>
+        <div id="result3" class="result"></div>
+    </div>
+
+    <script>
+        const baseUrl = 'http://localhost:8080/';
+        
+        async function testKomponen() {
+            const resultDiv = document.getElementById('result1');
+            try {
+                const response = await fetch(`${baseUrl}ajaxcontroller/komponen/1`);
+                const data = await response.json();
+                resultDiv.innerHTML = `<span class="success">SUCCESS:</span> ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">ERROR:</span> ${error.message}`;
+            }
+        }
+
+        async function testAkun() {
+            const resultDiv = document.getElementById('result2');
+            try {
+                const response = await fetch(`${baseUrl}ajaxcontroller/akun/68`);
+                const data = await response.json();
+                resultDiv.innerHTML = `<span class="success">SUCCESS:</span> ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">ERROR:</span> ${error.message}`;
+            }
+        }
+
+        async function testDetil() {
+            const resultDiv = document.getElementById('result3');
+            try {
+                const response = await fetch(`${baseUrl}ajaxcontroller/detil/1`);
+                const data = await response.json();
+                resultDiv.innerHTML = `<span class="success">SUCCESS:</span> ${JSON.stringify(data, null, 2)}`;
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="error">ERROR:</span> ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

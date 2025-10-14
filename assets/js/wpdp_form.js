@@ -10,12 +10,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const baseUrl = form.dataset.baseurl;
     const isEditingExisting = form.dataset.isEditingExisting === 'true';
     const isCreatingFromRo = form.dataset.isCreatingFromRo === 'true';
-    
-    console.log('Form config:', {
-        baseUrl: baseUrl,
-        isEditingExisting: isEditingExisting,
-        isCreatingFromRo: isCreatingFromRo
-    });
     const programSelect = document.getElementById('program_id');
     const kegiatanSelect = document.getElementById('kegiatan_id');
     const kroSelect = document.getElementById('kro_id');
@@ -45,15 +39,13 @@ document.addEventListener('DOMContentLoaded', function () {
     const tahunAnggaran = 2025;
 
 
-    // --- Fungsi Generic untuk Memuat Opsi Dropdown ---
+    // --- Fungsi Sederhana untuk Memuat Opsi Dropdown ---
     async function loadOptions(parentId, targetSelect, urlSegment, selectedId = null) {
-        console.log('=== loadOptions called ===');
-        console.log('parentId:', parentId);
-        console.log('urlSegment:', urlSegment);
-        console.log('targetSelectId:', targetSelect ? targetSelect.id : 'null');
-        console.log('selectedId:', selectedId);
-        console.log('isEditing:', isEditingExisting);
-        console.log('isCreatingFromRo:', isCreatingFromRo);
+        if (!parentId || !targetSelect) {
+            return;
+        }
+        
+        console.log(`Loading ${urlSegment} for parent ID: ${parentId}`);
         
         // Ensure targetSelect is not null before proceeding
         if (!targetSelect) {
@@ -263,12 +255,15 @@ document.addEventListener('DOMContentLoaded', function () {
         if (roSelect) roSelect.addEventListener('change', function () {
             console.log('=== RO CHANGE EVENT (Normal Mode) ===');
             console.log('RO selected:', this.value);
+            alert(`RO changed to: ${this.value}`);
             console.log('komponenSelect exists:', !!komponenSelect);
             if (komponenSelect) {
                 console.log('Loading komponen options...');
+                alert('Loading komponen options...');
                 loadOptions(this.value, komponenSelect, 'komponen');
             } else {
                 console.error('komponenSelect not found!');
+                alert('ERROR: komponenSelect not found!');
             }
             loadAnggaranValue(); // Panggil loadAnggaranValue setelah reset dropdown
         });
@@ -313,12 +308,15 @@ document.addEventListener('DOMContentLoaded', function () {
         roSelect.addEventListener('change', function () {
             console.log('=== RO CHANGE EVENT (Edit/CreateFromRo Mode) ===');
             console.log('RO selected:', this.value);
+            alert(`RO changed (Edit/CreateFromRo): ${this.value}`);
             console.log('komponenSelect exists:', !!komponenSelect);
             if (komponenSelect) {
                 console.log('Loading komponen options...');
+                alert('Loading komponen options...');
                 loadOptions(this.value, komponenSelect, 'komponen');
             } else {
                 console.error('komponenSelect not found!');
+                alert('ERROR: komponenSelect not found!');
             }
             loadAnggaranValue();
         });
