@@ -257,18 +257,45 @@ document.addEventListener('DOMContentLoaded', function () {
             loadOptions(this.value, detilSelect, 'detil');
             loadAnggaranValue(); // Panggil loadAnggaranValue setelah Detil dimuat
         });
-    } else if (isCreatingFromRo) {
-        // Mode Create From RO: Dropdown Program s/d RO disabled, Komponen s/d Detil aktif
-        // Add event listeners for the active dropdowns
-        if (komponenSelect) komponenSelect.addEventListener('change', function () {
+    }
+    
+    // --- Event Listeners untuk Komponen, Akun, Detil (Aktif di SEMUA Mode) ---
+    // Pastikan dropdown komponen selalu memiliki event listener
+    if (komponenSelect && !komponenSelect.dataset.hasChangeListener) {
+        komponenSelect.addEventListener('change', function () {
+            console.log('Komponen changed to:', this.value);
             loadOptions(this.value, akunSelect, 'akun');
             loadAnggaranValue();
         });
-        if (akunSelect) akunSelect.addEventListener('change', function () {
+        komponenSelect.dataset.hasChangeListener = 'true';
+        console.log('Added change listener for komponenSelect (global)');
+    }
+
+    if (akunSelect && !akunSelect.dataset.hasChangeListener) {
+        akunSelect.addEventListener('change', function () {
+            console.log('Akun changed to:', this.value);
             loadOptions(this.value, detilSelect, 'detil');
             loadAnggaranValue();
         });
-        // Detil dan Bulan listeners ditambahkan di blok bawah, tidak perlu duplikasi di sini
+        akunSelect.dataset.hasChangeListener = 'true';
+        console.log('Added change listener for akunSelect (global)');
+    }
+    
+    // --- Event Listener untuk RO change (untuk semua mode kecuali mode tambah baru) ---
+    if ((isEditingExisting || isCreatingFromRo) && roSelect && !roSelect.dataset.hasChangeListener) {
+        roSelect.addEventListener('change', function () {
+            console.log('RO changed to:', this.value);
+            loadOptions(this.value, komponenSelect, 'komponen');
+            loadAnggaranValue();
+        });
+        roSelect.dataset.hasChangeListener = 'true';
+        console.log('Added change listener for roSelect (for edit/createFromRo mode)');
+    }
+    
+    if (isCreatingFromRo) {
+        // Mode Create From RO: Dropdown Program s/d RO disabled, Komponen s/d Detil aktif
+        console.log('Mode: Creating From RO - komponen dropdown should be active');
+        // Event listeners sudah dipasang di blok global di atas
     }
 
 
@@ -296,34 +323,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    // Untuk mode edit, Komponen dan Akun juga perlu event listener change
-    if (isEditingExisting) {
-        if (komponenSelect && !komponenSelect.dataset.hasChangeListener) {
-            komponenSelect.addEventListener('change', function () {
-                loadOptions(this.value, akunSelect, 'akun');
-                loadAnggaranValue();
-            });
-            komponenSelect.dataset.hasChangeListener = 'true';
-            console.log('Added change listener for komponenSelect in edit mode');
-        } else if (komponenSelect) {
-            console.log('komponenSelect already has a change listener in edit mode');
-        } else {
-            console.error('komponenSelect element not found for adding change listener in edit mode');
-        }
-
-        if (akunSelect && !akunSelect.dataset.hasChangeListener) {
-            akunSelect.addEventListener('change', function () {
-                loadOptions(this.value, detilSelect, 'detil');
-                //loadAnggaranValue();
-            });
-            akunSelect.dataset.hasChangeListener = 'true';
-            console.log('Added change listener for akunSelect in edit mode');
-        } else if (akunSelect) {
-            console.log('akunSelect already has a change listener in edit mode');
-        } else {
-            console.error('akunSelect element not found for adding change listener in edit mode');
-        }
-    }
+    // Event listeners untuk mode edit sudah ditangani di blok global di atas
 
 
     // --- Logika Saat Halaman Dimuat (Handling Edit Mode Eksisting atau Pre-fill) ---
