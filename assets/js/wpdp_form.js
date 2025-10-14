@@ -47,11 +47,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Fungsi Generic untuk Memuat Opsi Dropdown ---
     async function loadOptions(parentId, targetSelect, urlSegment, selectedId = null) {
-        console.log('loadOptions called:', {
-            parentId: parentId,
-            urlSegment: urlSegment,
-            targetSelectId: targetSelect ? targetSelect.id : 'null'
-        });
+        console.log('=== loadOptions called ===');
+        console.log('parentId:', parentId);
+        console.log('urlSegment:', urlSegment);
+        console.log('targetSelectId:', targetSelect ? targetSelect.id : 'null');
+        console.log('selectedId:', selectedId);
+        console.log('isEditing:', isEditingExisting);
+        console.log('isCreatingFromRo:', isCreatingFromRo);
         
         // Ensure targetSelect is not null before proceeding
         if (!targetSelect) {
@@ -107,36 +109,51 @@ document.addEventListener('DOMContentLoaded', function () {
             try {
                 // Asumsi endpoint AJAX ada di base_url/ajaxcontroller/...
                 const url = `${baseUrl}ajaxcontroller/${urlSegment}/${parentId}`;
+                console.log('Fetching URL:', url);
                 
                 const response = await fetch(url);
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                
                 if (!response.ok) {
                     targetSelect.innerHTML = '<option value="">-- Gagal memuat data --</option>';
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const data = await response.json();
+                console.log('Data received:', data);
                 
                 targetSelect.innerHTML = '<option value="">-- Pilih ' + targetSelect.previousElementSibling.innerText + ' --</option>'; // Reset lagi setelah sukses fetch
-                data.forEach(item => {
-                    const option = document.createElement('option');
-                    option.value = item.id;
-                    if (urlSegment === 'kegiatan') {
-                        option.textContent = `${item.kode_kegiatan} - ${item.nama_kegiatan}`;
-                    } else if (urlSegment === 'kro') {
-                        option.textContent = `${item.kode_kro} - ${item.nama_kro}`;
-                    } else if (urlSegment === 'ro') {
-                        option.textContent = `${item.kode_ro} - ${item.nama_ro}`;
-                    } else if (urlSegment === 'komponen') {
-                        option.textContent = `${item.kode_komponen} - ${item.nama_komponen}`;
-                    } else if (urlSegment === 'akun') {
-                        option.textContent = `${item.kode_akun} - ${item.nama_akun}`;
-                    } else if (urlSegment === 'detil') {
-                        option.textContent = `${item.kode_detil} - ${item.nama_detil}`;
-                    }
-                    targetSelect.appendChild(option);
-                });
+                console.log('Resetting targetSelect, now has options:', targetSelect.options.length);
+                
+                if (Array.isArray(data) && data.length > 0) {
+                    data.forEach(item => {
+                        const option = document.createElement('option');
+                        option.value = item.id;
+                        if (urlSegment === 'kegiatan') {
+                            option.textContent = `${item.kode_kegiatan} - ${item.nama_kegiatan}`;
+                        } else if (urlSegment === 'kro') {
+                            option.textContent = `${item.kode_kro} - ${item.nama_kro}`;
+                        } else if (urlSegment === 'ro') {
+                            option.textContent = `${item.kode_ro} - ${item.nama_ro}`;
+                        } else if (urlSegment === 'komponen') {
+                            option.textContent = `${item.kode_komponen} - ${item.nama_komponen}`;
+                        } else if (urlSegment === 'akun') {
+                            option.textContent = `${item.kode_akun} - ${item.nama_akun}`;
+                        } else if (urlSegment === 'detil') {
+                            option.textContent = `${item.kode_detil} - ${item.nama_detil}`;
+                        }
+                        targetSelect.appendChild(option);
+                        console.log('Added option:', option.textContent);
+                    });
+                    console.log('Total options after loading:', targetSelect.options.length);
+                } else {
+                    console.warn('No data received or data is not an array:', data);
+                    targetSelect.innerHTML += '<option value="">-- Tidak ada data --</option>';
+                }
 
                 if (selectedId) {
                     targetSelect.value = selectedId;
+                    console.log('Set selectedId:', selectedId);
                 }
 
 
@@ -244,7 +261,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
         if (roSelect) roSelect.addEventListener('change', function () {
-            loadOptions(this.value, komponenSelect, 'komponen');
+            console.log('=== RO CHANGE EVENT (Normal Mode) ===');
+            console.log('RO selected:', this.value);
+            console.log('komponenSelect exists:', !!komponenSelect);
+            if (komponenSelect) {
+                console.log('Loading komponen options...');
+                loadOptions(this.value, komponenSelect, 'komponen');
+            } else {
+                console.error('komponenSelect not found!');
+            }
             loadAnggaranValue(); // Panggil loadAnggaranValue setelah reset dropdown
         });
 
@@ -281,15 +306,24 @@ document.addEventListener('DOMContentLoaded', function () {
         console.log('Added change listener for akunSelect (global)');
     }
     
-    // --- Event Listener untuk RO change (untuk semua mode kecuali mode tambah baru) ---
-    if ((isEditingExisting || isCreatingFromRo) && roSelect && !roSelect.dataset.hasChangeListener) {
+    // Event listener untuk RO sudah ditangani di blok sebelumnya untuk masing-masing mode
+    
+    // --- Event Listener khusus untuk RO di mode Edit dan CreateFromRo ---
+    if ((isEditingExisting || isCreatingFromRo) && roSelect && !roSelect.dataset.hasRoListener) {
         roSelect.addEventListener('change', function () {
-            console.log('RO changed to:', this.value);
-            loadOptions(this.value, komponenSelect, 'komponen');
+            console.log('=== RO CHANGE EVENT (Edit/CreateFromRo Mode) ===');
+            console.log('RO selected:', this.value);
+            console.log('komponenSelect exists:', !!komponenSelect);
+            if (komponenSelect) {
+                console.log('Loading komponen options...');
+                loadOptions(this.value, komponenSelect, 'komponen');
+            } else {
+                console.error('komponenSelect not found!');
+            }
             loadAnggaranValue();
         });
-        roSelect.dataset.hasChangeListener = 'true';
-        console.log('Added change listener for roSelect (for edit/createFromRo mode)');
+        roSelect.dataset.hasRoListener = 'true';
+        console.log('Added RO change listener for edit/createFromRo mode');
     }
     
     if (isCreatingFromRo) {
